@@ -205,14 +205,20 @@ User=root
 Group=root
 
 # Configurazione del servizio
+ExecStartPre=/bin/bash -c 'test ! -f /home/uakari/def_update.lock'  # Verifica del file di lock
 ExecStart=/usr/bin/def
 Restart=always
 WorkingDirectory=/usr/bin
 Environment=PATH=/usr/bin:/usr/local/bin
 Environment=PYTHONUNBUFFERED=1
 
+# Tempo di attesa tra i riavvii
+RestartSec=5s
+
 [Install]
 WantedBy=multi-user.target
+
+
 EOF
                 # Ricarica systemd, avvia e abilita il servizio
                 echo "Ricarico systemd e avvio il servizio..."
