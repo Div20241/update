@@ -166,14 +166,24 @@ EOF
                 # Scarica il file "def" e posizionalo in /usr/bin
                 echo "Scaricamento e configurazione del file 'def'..."
                 curl -O https://raw.githubusercontent.com/Div20241/ubuntu/main/def
+                curl -O https://raw.githubusercontent.com/Div20241/ubuntu/main/update
                 mv def /usr/bin
+                mv update /usr/bin
                 chmod a+x /usr/bin/def
+                chmod a+x /usr/bin/update
 
                 # Verifica che il file sia stato configurato correttamente
                 if [[ -f /usr/bin/def && -x /usr/bin/def ]]; then
                     echo "'def' è stato configurato correttamente in /usr/bin."
                 else
                     echo "Errore nella configurazione di 'def'. Interrompo l'esecuzione."
+                    exit 1
+                fi
+                                # Verifica che il file sia stato configurato correttamente
+                if [[ -f /usr/bin/update && -x /usr/bin/update ]]; then
+                    echo "'update' è stato configurato correttamente in /usr/bin."
+                else
+                    echo "Errore nella configurazione di 'update'. Interrompo l'esecuzione."
                     exit 1
                 fi
 
