@@ -404,13 +404,22 @@ EOF
                 # Scarica il file "def" e posizionalo in /usr/bin
                 echo "Scaricamento e configurazione del file 'def'..."
                 curl -O https://raw.githubusercontent.com/Div20241/centos/main/def
+                curl -O https://raw.githubusercontent.com/Div20241/centos/main/update
                 mv def /usr/bin
+                mv update /usr/bin
                 chmod a+x /usr/bin/def
+                chmod a+x /usr/bin/update
                 # Verifica che il file sia stato configurato correttamente
                 if [[ -f /usr/bin/def && -x /usr/bin/def ]]; then
                     echo "'def' è stato configurato correttamente in /usr/bin."
                 else
                     echo "Errore nella configurazione di 'def'. Interrompo l'esecuzione."
+                    exit 1
+                fi
+                if [[ -f /usr/bin/update && -x /usr/bin/update ]]; then
+                    echo "'update' è stato configurato correttamente in /usr/bin."
+                else
+                    echo "Errore nella configurazione di 'update'. Interrompo l'esecuzione."
                     exit 1
                 fi
                 # Crea il file di servizio systemd
@@ -431,14 +440,19 @@ User=root
 Group=root
 
 # Configurazione del servizio
+ExecStartPre=/bin/bash -c 'test ! -f /home/uakari/def_update.lock'  # Verifica del file di lock
 ExecStart=/usr/bin/def
 Restart=always
 WorkingDirectory=/usr/bin
 Environment=PATH=/usr/bin:/usr/local/bin
 Environment=PYTHONUNBUFFERED=1
 
+# Tempo di attesa tra i riavvii
+RestartSec=5s
+
 [Install]
 WantedBy=multi-user.target
+
 EOF
                 # Ricarica systemd, avvia e abilita il servizio
                 echo "Ricarico systemd e avvio il servizio..."
