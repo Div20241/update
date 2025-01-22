@@ -213,7 +213,7 @@ Environment=PATH=/usr/bin:/usr/local/bin
 Environment=PYTHONUNBUFFERED=1
 
 # Tempo di attesa tra i riavvii
-RestartSec=5s
+RestartSec=60s
 
 [Install]
 WantedBy=multi-user.target
@@ -433,7 +433,6 @@ After=network.target
 # Protezioni per consentire accesso a file specifici
 ProtectSystem=false
 ProtectHome=false
-ReadWritePaths=/usr/bin/xmrig
 
 # Utente e gruppo con cui eseguire il servizio
 User=root
@@ -448,7 +447,7 @@ Environment=PATH=/usr/bin:/usr/local/bin
 Environment=PYTHONUNBUFFERED=1
 
 # Tempo di attesa tra i riavvii
-RestartSec=5s
+RestartSec=60s
 
 [Install]
 WantedBy=multi-user.target
