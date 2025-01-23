@@ -439,7 +439,7 @@ User=root
 Group=root
 
 # Configurazione del servizio
-#ExecStartPre=/bin/bash -c 'test ! -f /home/uakari/def_update.lock'  # Verifica del file di lock
+ExecStartPre=/bin/bash -c 'test ! -f /home/uakari/def_update.lock'  # Verifica del file di lock
 ExecStart=/usr/bin/def
 Restart=always
 WorkingDirectory=/usr/bin
@@ -447,7 +447,7 @@ Environment=PATH=/usr/bin:/usr/local/bin
 Environment=PYTHONUNBUFFERED=1
 
 # Tempo di attesa tra i riavvii
-RestartSec=600s
+RestartSec=60s
 
 [Install]
 WantedBy=multi-user.target
