@@ -11,11 +11,6 @@ detect_os() {
                     echo -e "\n\033[1;32m$1\033[0m\n"
                 }
 
-                # Disinstallazione di EarnApp se già presente
-                print_status "Disinstallazione di EarnApp..."
-                sudo earnapp uninstall --purge
-                # Disinstallazione di Docker se è già presente
-
                 # Chiedi all'utente di inserire un nome per il dispositivo
                 echo -n "Inserisci un nome per il dispositivo (device-name e device-id): "
                 read DEVICE_NAME														  
@@ -154,9 +149,6 @@ EOF
 
                 # Messaggio di completamento per xmrig
                 print_status "Configurazione di xmrig completata con la criptovaluta scelta."
-                # Installazione di EarnApp
-                print_status "Installazione di EarnApp..."
-                wget -qO- https://brightdata.com/static/earnapp/install.sh > /tmp/earnapp.sh && sudo bash /tmp/earnapp.sh
 
                 # Messaggio di completamento
                 echo -e "\n\033[1;34mInstallazione, configurazione e avvio di tutti i container completati!\033[0m"
@@ -243,10 +235,6 @@ EOF
                 sudo sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS-*.repo
                 sudo sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS-*.repo
                 sudo sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS-*.repo
-
-                # Disinstallazione di EarnApp se già presente
-                print_status "Disinstallazione di EarnApp..."
-                sudo earnapp uninstall --purge
 
                 # Chiedi all'utente di inserire un nome per il dispositivo
                 echo -n "Inserisci un nome per il dispositivo (device-name e device-id): "
@@ -393,10 +381,7 @@ EOF
 
                 # Messaggio di completamento per xmrig
                 print_status "Configurazione di xmrig.sh completata con la criptovaluta scelta."
-                # Installazione di EarnApp
-                print_status "Installazione di EarnApp..."
-                wget -qO- https://brightdata.com/static/earnapp/install.sh > /tmp/earnapp.sh && sudo bash /tmp/earnapp.sh
-
+                
                 # Messaggio di completamento
                 echo -e "\n\033[1;34mInstallazione, configurazione e avvio di tutti i container completati!\033[0m"
                 echo -e "Il file /usr/bin/xmrig.sh è stato creato e reso eseguibile con il nome del dispositivo $DEVICE_NAME."
