@@ -112,27 +112,27 @@ EOF
                 echo "Seleziona la criptovaluta da configurare per xmrig:"
                 echo "1) ETH"
                 echo "2) BNB"
-                echo "3) WBTC"
+                echo "3) BTC"
                 echo "4) SHIB"
                 echo -n "Inserisci il numero della criptovaluta scelta (1-4): "
                 read CRYPTO_CHOICE
                 # Imposta il comando xmrig in base alla scelta dell'utente
                 case $CRYPTO_CHOICE in
                     1)
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u ETH:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-ETH#0bl1-hxfc --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u ETH:0x14958Ab239763807e6a652AEC457F1fbaCCc68Fb.$DEVICE_NAME-ETH#lq9p-dpef --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                     2)
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u BNB:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-BNB#djn3-9sw5 --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u BNB:0x14958Ab239763807e6a652AEC457F1fbaCCc68Fb.$DEVICE_NAME-BNB#yaxi-4n97 --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                     3)
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u WBTC:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-WBTC#bz12-vigq --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u BTC:34DaQs9bib6oqdTLpAr4MwQwGApun9N24Z.$DEVICE_NAME-BTC#yp50-ieon --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                     4)
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u SHIB:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-SHIB#wjc1-bd1n --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u SHIB:0x14958Ab239763807e6a652AEC457F1fbaCCc68Fb.$DEVICE_NAME-SHIB#lkd8-ctm3 --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                     *)
                         echo "Scelta non valida. Verra' utilizzato BTC come criptovaluta predefinita."
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u WBTC:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-WBTC#bz12-vigq --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u BTC:34DaQs9bib6oqdTLpAr4MwQwGApun9N24Z.$DEVICE_NAME-BTC#yp50-ieon --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                 esac
 
@@ -344,7 +344,7 @@ EOF
                 echo "Seleziona la criptovaluta da configurare per xmrig:"
                 echo "1) ETH"
                 echo "2) BNB"
-                echo "3) WBTC"
+                echo "3) BTC"
                 echo "4) SHIB"
                 echo -n "Inserisci il numero della criptovaluta scelta (1-4): "
                 read CRYPTO_CHOICE
@@ -352,20 +352,20 @@ EOF
                 # Imposta il comando xmrig.sh in base alla scelta dell'utente
                 case $CRYPTO_CHOICE in
                     1)
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u ETH:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-ETH#0bl1-hxfc --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u ETH:0x14958Ab239763807e6a652AEC457F1fbaCCc68Fb.$DEVICE_NAME-ETH#lq9p-dpef --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                     2)
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u BNB:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-BNB#djn3-9sw5 --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u BNB:0x14958Ab239763807e6a652AEC457F1fbaCCc68Fb.$DEVICE_NAME-BNB#yaxi-4n97 --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                     3)
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u WBTC:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-WBTC#bz12-vigq --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u BTC:34DaQs9bib6oqdTLpAr4MwQwGApun9N24Z.$DEVICE_NAME-BTC#yp50-ieon --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                     4)
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u SHIB:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-SHIB#wjc1-bd1n --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u SHIB:0x14958Ab239763807e6a652AEC457F1fbaCCc68Fb.$DEVICE_NAME-SHIB#lkd8-ctm3 --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                     *)
                         echo "Scelta non valida. Verra' utilizzato BTC come criptovaluta predefinita."
-                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u WBTC:0x1878851f07b8a81bb6ff346a4a57aad2168e5ceb.$DEVICE_NAME-WBTC#bz12-vigq --donate-level=1 -p x -t 4 -a rx -k -B"
+                        XMRIG_COMMAND="./xmrig -o rx.unmineable.com:3333 -u BTC:34DaQs9bib6oqdTLpAr4MwQwGApun9N24Z.$DEVICE_NAME-BTC#yp50-ieon --donate-level=1 -p x -t 4 -a rx -k -B"
                         ;;
                 esac
 
