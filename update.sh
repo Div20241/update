@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 detect_os() {
     if [ -f /etc/os-release ]; then
         . /etc/os-release  # Importa le variabili da /etc/os-release
@@ -11,64 +12,72 @@ detect_os() {
                     echo -e "\n\033[1;32m$1\033[0m\n"
                 }
 
-                # Chiedi all'utente di inserire un nome per il dispositivo
+                print_status "Pulizia e preparazione ambiente Docker..."
+
                 echo -n "Inserisci un nome per il dispositivo (device-name e device-id): "
-                read DEVICE_NAME														  
-                print_status "Rimozione di Docker, Docker CLI, Containerd e Docker Compose..."
-                sudo apt-get remove -y docker docker-engine docker.io containerd runc docker-compose-plugin
-                # Pulizia dei pacchetti inutilizzati
-                print_status "Pulizia dei pacchetti inutilizzati..."
-                sudo apt-get purge -y docker docker-engine docker.io containerd runc docker-compose-plugin
+                read DEVICE_NAME
+
+                # Rimozione completa Docker
+                sudo systemctl stop docker || true
+                sudo systemctl stop docker.socket || true
+                sudo systemctl stop containerd || true
+                sudo apt-get remove -y docker docker-engine docker.io containerd runc docker-compose-plugin || true
+                sudo apt-get purge -y docker docker-engine docker.io containerd runc docker-compose-plugin || true
                 sudo apt-get autoremove -y
-                sudo rm -rf /var/lib/docker
-                sudo rm -rf /var/lib/containerd
-                # Aggiunta dei repository Docker ufficiali
-                print_status "Aggiunta del repository Docker..."
+                sudo rm -rf /var/lib/docker /var/lib/containerd /etc/docker /var/run/docker*
+
+                # Pulizia vecchi repo Docker
+                sudo rm -f /etc/apt/sources.list.d/docker.list*
+                sudo sed -i 's/^\(deb .*focal.*\)/# \1/' /etc/apt/sources.list
+
+                print_status "Aggiunta repository Docker (bionic)..."
+                sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
                 sudo apt-get update
-                sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-                # Scarica la chiave e salvala direttamente con sovrascrittura automatica
-                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo install -m 644 /dev/stdin /usr/share/keyrings/docker-archive-keyring.gpg
-                echo \
-                "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-                $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-                # Installazione di Docker Engine e Docker Compose
-                print_status "Installazione di Docker e Docker Compose..."
-                sudo apt-get update
-                sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-                # Abilitazione di Docker all'avvio
-                print_status "Abilitazione di Docker all'avvio..."
-                sudo systemctl enable docker
-                sudo systemctl start docker
-                # Aggiunta dell'utente corrente al gruppo Docker
-                print_status "Aggiunta dell'utente al gruppo Docker per evitare l'uso di sudo..."
-                sudo usermod -aG docker $USER
-                # Configurazione delle impostazioni Docker nel file daemon.json
-                print_status "Configurazione del demone Docker..."
+
+                print_status "Installazione Docker CE e componenti..."
+                sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+                sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-ce-rootless-extras
+
+                print_status "Configurazione Docker daemon.json..."
                 sudo mkdir -p /etc/docker
                 sudo tee /etc/docker/daemon.json > /dev/null <<EOF
 {
-    "data-root": "/var/lib/docker",
-    "log-driver": "json-file",
-    "log-opts": {
-        "max-size": "10m",
-        "max-file": "3"
-    },
-    "storage-driver": "overlay2",
-    "bip": "192.168.1.5/24",
-    "registry-mirrors": ["https://mirror.gcr.io"],
-    "default-ulimits": {
-        "nofile": {
-        "Name": "nofile",
-        "Hard": 64000,
-        "Soft": 64000
-        }
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "storage-driver": "overlay2",
+  "registry-mirrors": ["https://mirror.gcr.io"],
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 64000,
+      "Soft": 64000
     }
+  }
 }
 EOF
-                # Riavvio del servizio Docker per applicare le nuove configurazioni
-                print_status "Riavvio del servizio Docker per applicare le configurazioni..."
+
+                print_status "Riavvio servizi Docker..."
+                sudo systemctl daemon-reexec
+                sudo systemctl daemon-reload
+                sudo systemctl enable docker
+                sudo systemctl enable docker.socket
+                sudo systemctl restart containerd
                 sudo systemctl restart docker
-                # Test dell'installazione Docker
+                sudo systemctl restart docker.socket
+
+                print_status "Aggiunta utente al gruppo Docker..."
+                sudo usermod -aG docker $USER
+
+                print_status "Verifica installazione..."
+                docker --version
+                docker info | grep -i 'Storage Driver'
+
                 print_status "Verifica dell'installazione Docker..."
                 docker --version
                 docker-compose --version
@@ -105,7 +114,7 @@ EOF
                 # Avvio del container traffmonetizer utilizzando l'ID
                 print_status "Avvio del container traffmonetizer utilizzando l'ID..."
                 docker start $TM_CONTAINER_ID
-
+                
                 # Creazione del file xmrig con la scelta della criptovaluta
                 print_status "Configurazione di xmrig per la criptovaluta scelta..."
                 # Menu per selezionare la criptovaluta
