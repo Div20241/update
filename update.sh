@@ -1,86 +1,105 @@
 #!/bin/bash
-
-
+# Funzione per stampare i messaggi di stato
+function print_status() {
+    echo -e "\n\033[1;32m$1\033[0m\n"
+}
 detect_os() {
     if [ -f /etc/os-release ]; then
         . /etc/os-release  # Importa le variabili da /etc/os-release
         case "$ID" in
             ubuntu)
                 echo "Il sistema operativo è Ubuntu."
-                # Funzione per stampare i messaggi di stato
-                function print_status() {
-                    echo -e "\n\033[1;32m$1\033[0m\n"
-                }
-
-                print_status "Pulizia e preparazione ambiente Docker..."
-
+                # Chiedi all'utente di inserire un nome per il dispositivo
                 echo -n "Inserisci un nome per il dispositivo (device-name e device-id): "
                 read DEVICE_NAME
+                set -e
 
-                # Rimozione completa Docker
+                echo "==> STEP 0: Rimozione forzata Docker e componenti residui"
+		sudo sed -i 's/--skip-systemd-native//g' /var/lib/dpkg/info/docker-ce.postinst
+		sudo sed -i 's/--skip-systemd-native//g' /var/lib/dpkg/info/docker-ce.prerm 2>/dev/null || true
+
+		sudo sed -i 's/--skip-systemd-native//g' /var/lib/dpkg/info/docker-ce.prerm
+                sudo docker rm -f $(sudo docker ps -aq) 2>/dev/null || true
+
+                echo "Fermando tutti i container Docker (se presenti)..."
+                if command -v docker >/dev/null 2>&1; then
+                #sudo docker stop $(sudo docker ps -aq) 2>/dev/null || true
+                sudo docker rm $(sudo docker ps -aq) 2>/dev/null || true
+                sudo docker rmi $(sudo docker images -q) 2>/dev/null || true
+                else
+                echo "Docker non trovato o non installato."
+                fi
+		sudo apt-get remove -y docker docker-engine docker.io containerd runc docker-compose-plugin || true
+                sudo apt-get purge -y docker docker-engine docker.io containerd runc docker-compose-plugin || true
+                sudo apt-get autoremove -y
                 sudo systemctl stop docker || true
                 sudo systemctl stop docker.socket || true
                 sudo systemctl stop containerd || true
-                sudo apt-get remove -y docker docker-engine docker.io containerd runc docker-compose-plugin || true
-                sudo apt-get purge -y docker docker-engine docker.io containerd runc docker-compose-plugin || true
-                sudo apt-get autoremove -y
-                sudo rm -rf /var/lib/docker /var/lib/containerd /etc/docker /var/run/docker*
+                echo "Pulizia entry repository Docker:"
+                sudo rm -f /etc/docker/daemon.json
+                grep -r docker /etc/apt/sources.list* /etc/apt/sources.list.d/ || true
 
-                # Pulizia vecchi repo Docker
-                sudo rm -f /etc/apt/sources.list.d/docker.list*
+                echo "Rimozione vecchi file sorgente Docker..."
+                sudo rm -f /etc/apt/sources.list.d/docker.list
+                sudo rm -f /etc/apt/sources.list.d/docker.list.save
+                sudo rm -f /etc/apt/sources.list.d/docker.list.distUpgrade
+
+                echo "Aggiunta repository Docker bionic..."
+                sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+
+                echo "Disabilito temporaneamente le voci focal nel file sources.list"
                 sudo sed -i 's/^\(deb .*focal.*\)/# \1/' /etc/apt/sources.list
 
-                print_status "Aggiunta repository Docker (bionic)..."
-                sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
+                echo "Pulizia e aggiornamento apt..."
+                sudo apt-get clean
                 sudo apt-get update
 
-                print_status "Installazione Docker CE e componenti..."
+                echo "Correggo script problematici"
+                sudo sed -i 's/--skip-systemd-native//g' /var/lib/dpkg/info/docker-ce.prerm || true
+                sudo sed -i 's/--skip-systemd-native//g' /var/lib/dpkg/info/docker-ce.postinst || true
+
+                echo "Rimozione forzata docker-ce..."
+                sudo dpkg --remove --force-remove-reinstreq docker-ce || true
+
+                echo "Backup script prerm/postrm se esistono..."
+                [ -f /var/lib/dpkg/info/docker-ce.prerm ] && sudo mv /var/lib/dpkg/info/docker-ce.prerm /var/lib/dpkg/info/docker-ce.prerm.backup
+                [ -f /var/lib/dpkg/info/docker-ce.postrm ] && sudo mv /var/lib/dpkg/info/docker-ce.postrm /var/lib/dpkg/info/docker-ce.postrm.backup
+
+                echo "Rimozione forzata docker-ce (ripetizione)..."
+                sudo dpkg --remove --force-remove-reinstreq docker-ce || true
+                sudo dpkg --purge docker-ce || true
+
+                echo "==> STEP 1: Reinstallazione Docker"
+
+                echo "Installo dipendenze..."
                 sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+
+                echo "Aggiunta chiave GPG ufficiale Docker..."
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+                echo "Pulizia e update..."
+                sudo apt-get clean
+                sudo apt-get update
+
+                echo "Installazione Docker CE, CLI e containerd.io..."
                 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-ce-rootless-extras
 
-                print_status "Configurazione Docker daemon.json..."
-                sudo mkdir -p /etc/docker
-                sudo tee /etc/docker/daemon.json > /dev/null <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "10m",
-    "max-file": "3"
-  },
-  "storage-driver": "overlay2",
-  "registry-mirrors": ["https://mirror.gcr.io"],
-  "default-ulimits": {
-    "nofile": {
-      "Name": "nofile",
-      "Hard": 64000,
-      "Soft": 64000
-    }
-  }
-}
-EOF
+                echo "Fix '--skip-systemd-native' se ancora presente..."
+                sudo sed -i 's/--skip-systemd-native//g' /var/lib/dpkg/info/docker-ce.postinst || true
+                sudo sed -i 's/--skip-systemd-native//g' /var/lib/dpkg/info/docker-ce.prerm || true
 
-                print_status "Riavvio servizi Docker..."
-                sudo systemctl daemon-reexec
-                sudo systemctl daemon-reload
+                echo "Completamento configurazione Docker CE..."
+                sudo dpkg --configure -a
+
+                echo "Abilitazione e avvio Docker..."
                 sudo systemctl enable docker
-                sudo systemctl enable docker.socket
-                sudo systemctl restart containerd
-                sudo systemctl restart docker
-                sudo systemctl restart docker.socket
+                sudo systemctl start docker
 
-                print_status "Aggiunta utente al gruppo Docker..."
-                sudo usermod -aG docker $USER
-
-                print_status "Verifica installazione..."
+                echo "Verifica versione Docker:"
                 docker --version
-                docker info | grep -i 'Storage Driver'
 
-                print_status "Verifica dell'installazione Docker..."
-                docker --version
-                docker-compose --version
+                echo "==> Docker installato e funzionante ✅"
+
                 
                 # Esegui il docker pull e il docker run per iproyal/pawns-cli
                 print_status "Esecuzione del pull e run del container iproyal/pawns-cli..."
